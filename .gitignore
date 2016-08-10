@@ -6,3 +6,4 @@ htmlcov/
 examples.frames.json
 build/
 dist/
+*.pyc

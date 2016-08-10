@@ -1,16 +1,13 @@
 import datetime
-import shutil
+
 import string
 import sys
 import time
 
 try:
-    import pkg_resources
-except ImportError:  # pragma: no cover
-    pass
-else:
-    if __package__:
-        VERSION = pkg_resources.get_distribution(__package__).version
+    from shutil import get_terminal_size
+except ImportError:
+    from backports.shutil_get_terminal_size import get_terminal_size
 
 
 class Formatter(string.Formatter):
@@ -41,7 +38,7 @@ class Formatter(string.Formatter):
             return self.format_bytes(int(value), spec=spec)
         elif format_string.endswith("D"):
             return self.format_int(value)
-        return super().format_field(value, format_string)
+        return super(Formatter, self).format_field(value, format_string)
 
 
 class ProgressBar:
@@ -81,7 +78,7 @@ class ProgressBar:
         return self.formatter.vformat(tpl, None, self)
 
     def compute_columns(self):
-        return shutil.get_terminal_size((80, 20)).columns
+        return get_terminal_size((80, 20)).columns
 
     def __getitem__(self, item):
         return getattr(self, item, '')
@@ -205,7 +202,7 @@ class Float(float):
     def __format__(self, format_spec):
         if not format_spec:
             format_spec = '.2f'
-        return super().__format__(format_spec)
+        return super(Float, self).__format__(format_spec)
 
 
 class Percent(float):
@@ -213,7 +210,7 @@ class Percent(float):
     def __format__(self, format_spec):
         if not format_spec:
             format_spec = '.2%'
-        return super().__format__(format_spec)
+        return super(Percent, self).__format__(format_spec)
 
 
 class ETA(datetime.datetime):
@@ -222,11 +219,11 @@ class ETA(datetime.datetime):
         if args and not isinstance(args[0], int):
             # datetime + timedelta returns a datetime, while we want an ETA.
             dt = args[0]
-            return super().__new__(cls, year=dt.year, month=dt.month,
+            return super(ETA, self).__new__(cls, year=dt.year, month=dt.month,
                                    day=dt.day, hour=dt.hour, minute=dt.minute,
                                    second=dt.second, tzinfo=dt.tzinfo)
         else:
-            return super().__new__(cls, *args, **kwargs)
+            return super(ETA, self).__new__(cls, *args, **kwargs)
 
     def __format__(self, format_spec):
         if not format_spec:
@@ -235,7 +232,7 @@ class ETA(datetime.datetime):
             format_spec = '%H:%M:%S'
             if diff.days > 0:
                 format_spec = '%Y-%m-%d %H:%M:%S'
-        return super().__format__(format_spec)
+        return super(ETA, self).__format__(format_spec)
 
 
 class Timedelta(int):
@@ -254,4 +251,4 @@ class Timedelta(int):
     def __format__(self, format_spec):
         if not format_spec:
             return self.format_as_timedelta()
-        return super().__format__(format_spec)
+        return super(Timedelta, self).__format__(format_spec)

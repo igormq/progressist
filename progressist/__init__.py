@@ -3,6 +3,7 @@ import datetime
 import string
 import sys
 import time
+import logging
 
 try:
     from shutil import get_terminal_size
@@ -66,6 +67,9 @@ class ProgressBar:
             self.template = '\r' + self.template
         self.formatter = Formatter()
         self._last_render = 0
+
+        self._logger = kwargs.get('logger', logging.getLogger(__name__))
+
         if self.throttle:
             if not isinstance(self.throttle, (int, float, datetime.timedelta)):
                 raise ValueError('Invalid type for throttle: '
@@ -157,7 +161,12 @@ class ProgressBar:
 
         self.free_space = (self.columns - len(line) + len(self.animation)
                            + self.invisible_chars)
-        sys.stdout.write(self.format(line))
+
+        message = self.format(line)
+        self._logger.info(message)
+
+        sys.stdout.write(message)
+
         self.prints += 1
 
         if self.fraction >= 1.0:
